@@ -2,15 +2,23 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:taghyeer/core/colors/app_colors.dart';
+import 'package:taghyeer/core/service/shared_preferences_helper.dart';
 import 'package:taghyeer/core/theme/theme_controller.dart';
-import 'package:taghyeer/feature/auth/controller/login_controller.dart';
+import 'package:taghyeer/feature/auth/screen/login_screen.dart';
 
-class ProfileScreen extends StatelessWidget {
-  const ProfileScreen({super.key});
+class SettingScreen extends StatelessWidget {
+  const SettingScreen({super.key});
+
+  Future<Map<String, String>> _loadUser() async {
+    final name = await SharedPreferencesHelper.getName() ?? '';
+    final email = await SharedPreferencesHelper.getEmail() ?? '';
+    final image = await SharedPreferencesHelper.getImage() ?? '';
+    final username = await SharedPreferencesHelper.getUsername() ?? '';
+    return {'name': name, 'email': email, 'image': image, 'username': username};
+  }
 
   @override
   Widget build(BuildContext context) {
-    final auth = Get.find<AuthController>();
     final theme = Get.find<ThemeController>();
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
@@ -23,7 +31,6 @@ class ProfileScreen extends StatelessWidget {
             children: [
               const SizedBox(height: 28),
 
-              // ── Page title ──────────────────────────────────────────────
               Text(
                 'Profile',
                 style: TextStyle(
@@ -38,61 +45,65 @@ class ProfileScreen extends StatelessWidget {
 
               const SizedBox(height: 28),
 
-              // ── User info card ──────────────────────────────────────────
-              // Obx(() {
-              //   final u = auth.user.value;
-              //   if (u == null) return const SizedBox.shrink();
+              FutureBuilder<Map<String, String>>(
+                future: _loadUser(),
+                builder: (context, snapshot) {
+                  if (!snapshot.hasData) {
+                    return const _UserCardSkeleton();
+                  }
 
-              //   return Container(
-              //     padding: const EdgeInsets.all(20),
-              //     decoration: BoxDecoration(
-              //       color: isDark ? AppColors.darkSurface : AppColors.lightSurface,
-              //       borderRadius: BorderRadius.circular(20),
-              //       boxShadow: [
-              //         BoxShadow(
-              //           color: isDark
-              //               ? Colors.black.withAlpha(60)
-              //               : Colors.black.withAlpha(10),
-              //           blurRadius: 20,
-              //           offset: const Offset(0, 6),
-              //         ),
-              //       ],
-              //     ),
-              //     child: Row(
-              //       children: [
-              //         // Avatar
-              //         _Avatar(imageUrl: u.profileImage, isDark: isDark),
-              //         const SizedBox(width: 16),
+                  final user = snapshot.data!;
+                  return Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: isDark
+                          ? AppColors.darkSurface
+                          : AppColors.lightSurface,
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: [
+                        BoxShadow(
+                          color: isDark
+                              ? Colors.black.withAlpha(60)
+                              : Colors.black.withAlpha(10),
+                          blurRadius: 20,
+                          offset: const Offset(0, 6),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      children: [
+                        _Avatar(imageUrl: user['image']!, isDark: isDark),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                user['name']!,
+                                style: TextStyle(
+                                  fontSize: 17,
+                                  fontWeight: FontWeight.w700,
+                                  color: isDark
+                                      ? AppColors.darkTextPrimary
+                                      : AppColors.lightTextPrimary,
+                                ),
+                              ),
+                              const SizedBox(height: 3),
+                              _SubText('@${user['username']}', isDark: isDark),
+                              const SizedBox(height: 2),
+                              _SubText(user['email']!, isDark: isDark),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
 
-              //         // Info
-              //         Expanded(
-              //           child: Column(
-              //             crossAxisAlignment: CrossAxisAlignment.start,
-              //             children: [
-              //               Text(
-              //                 u.name,
-              //                 style: TextStyle(
-              //                   fontSize: 17,
-              //                   fontWeight: FontWeight.w700,
-              //                   color: isDark
-              //                       ? AppColors.darkTextPrimary
-              //                       : AppColors.lightTextPrimary,
-              //                 ),
-              //               ),
-              //               const SizedBox(height: 3),
-              //               _SubText('@${u.username}', isDark: isDark),
-              //               const SizedBox(height: 2),
-              //               _SubText(u.email, isDark: isDark),
-              //             ],
-              //           ),
-              //         ),
-              //       ],
-              //     ),
-              //   );
-              // }),
               const SizedBox(height: 28),
 
-              // ── Settings section ────────────────────────────────────────
+              // ── Preferences ─────────────────────────────────────────────
               _SectionLabel('Preferences', isDark: isDark),
               const SizedBox(height: 10),
 
@@ -120,7 +131,7 @@ class ProfileScreen extends StatelessWidget {
 
               const SizedBox(height: 28),
 
-              // ── Danger section ──────────────────────────────────────────
+              // ── Account ─────────────────────────────────────────────────
               _SectionLabel('Account', isDark: isDark),
               const SizedBox(height: 10),
 
@@ -130,7 +141,7 @@ class ProfileScreen extends StatelessWidget {
                 isDark: isDark,
                 iconColor: AppColors.error,
                 labelColor: AppColors.error,
-                onTap: () => _showLogoutDialog(context, auth, isDark),
+                onTap: () => _showLogoutDialog(context, isDark),
               ),
 
               const SizedBox(height: 40),
@@ -141,11 +152,7 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  void _showLogoutDialog(
-    BuildContext context,
-    AuthController auth,
-    bool isDark,
-  ) {
+  void _showLogoutDialog(BuildContext context, bool isDark) {
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
@@ -179,9 +186,9 @@ class ProfileScreen extends StatelessWidget {
             ),
           ),
           TextButton(
-            onPressed: () {
-              Get.back();
-              //auth.logout();
+            onPressed: () async {
+              await SharedPreferencesHelper.clearSession();
+              Get.offAll(() => const LoginScreen());
             },
             child: const Text(
               'Logout',
@@ -195,6 +202,70 @@ class ProfileScreen extends StatelessWidget {
       ),
     );
   }
+}
+
+// ── User Card Skeleton ────────────────────────────────────────────────────────
+
+class _UserCardSkeleton extends StatelessWidget {
+  const _UserCardSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.darkSurface : AppColors.lightSurface,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 64,
+            height: 64,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: isDark ? const Color(0xFF1E1E2A) : const Color(0xFFF0F0F8),
+            ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _ShimmerBox(width: 120, height: 14, isDark: isDark),
+                const SizedBox(height: 8),
+                _ShimmerBox(width: 90, height: 12, isDark: isDark),
+                const SizedBox(height: 6),
+                _ShimmerBox(width: 150, height: 12, isDark: isDark),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ShimmerBox extends StatelessWidget {
+  final double width;
+  final double height;
+  final bool isDark;
+  const _ShimmerBox({
+    required this.width,
+    required this.height,
+    required this.isDark,
+  });
+
+  @override
+  Widget build(BuildContext context) => Container(
+    width: width,
+    height: height,
+    decoration: BoxDecoration(
+      color: isDark ? const Color(0xFF2A2A3A) : const Color(0xFFE8E8EE),
+      borderRadius: BorderRadius.circular(6),
+    ),
+  );
 }
 
 // ── Avatar ────────────────────────────────────────────────────────────────────
@@ -225,15 +296,15 @@ class _Avatar extends StatelessWidget {
             ? CachedNetworkImage(
                 imageUrl: imageUrl,
                 fit: BoxFit.cover,
-                placeholder: (_, __) => _avatarPlaceholder(isDark),
-                errorWidget: (_, __, ___) => _avatarPlaceholder(isDark),
+                placeholder: (_, __) => _placeholder(),
+                errorWidget: (_, __, ___) => _placeholder(),
               )
-            : _avatarPlaceholder(isDark),
+            : _placeholder(),
       ),
     );
   }
 
-  Widget _avatarPlaceholder(bool isDark) => Container(
+  Widget _placeholder() => Container(
     color: isDark ? const Color(0xFF1E1E2A) : const Color(0xFFF0F0F8),
     child: const Icon(Icons.person_rounded, color: AppColors.accent, size: 32),
   );

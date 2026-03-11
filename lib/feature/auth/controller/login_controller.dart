@@ -1,9 +1,12 @@
-// lib/controllers/auth_controller.dart
-
+import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
+import 'package:taghyeer/core/nav_bar/screen/nav_bar_screen.dart';
+import 'package:taghyeer/core/service/shared_preferences_helper.dart';
 
 class AuthController extends GetxController {
   final RxBool isLoading = false.obs;
@@ -41,16 +44,52 @@ class AuthController extends GetxController {
           .timeout(const Duration(seconds: 15));
 
       final data = jsonDecode(response.body);
+      if (kDebugMode) print('Login response: $data');
 
       if (response.statusCode == 200) {
+        await SharedPreferencesHelper.saveUserSession(
+          accessToken: data['accessToken'] as String,
+          refreshToken: data['refreshToken'] as String,
+          username: data['username'] as String,
+          name: '${data['firstName']} ${data['lastName']}',
+          email: data['email'] as String,
+          image: data['image'] as String,
+        );
+
+        usernameController.clear();
+        passwordController.clear();
+
+        Get.offAll(() => NavigationbarScreen());
       } else {
         errorMessage.value = data['message'] ?? 'Login failed';
+        _showErrorSnackbar(errorMessage.value);
       }
+    } on SocketException {
+      errorMessage.value = 'No internet connection. Check your network.';
+      _showErrorSnackbar(errorMessage.value);
+    } on TimeoutException {
+      errorMessage.value = 'Request timed out. Please try again.';
+      _showErrorSnackbar(errorMessage.value);
     } catch (e) {
       errorMessage.value = 'Something went wrong. Please try again.';
+      _showErrorSnackbar(errorMessage.value);
     } finally {
       isLoading.value = false;
     }
+  }
+
+  void _showErrorSnackbar(String message) {
+    Get.snackbar(
+      'Error',
+      message,
+      backgroundColor: Colors.redAccent,
+      colorText: Colors.white,
+      snackPosition: SnackPosition.BOTTOM,
+      margin: const EdgeInsets.all(16),
+      borderRadius: 12,
+      duration: const Duration(seconds: 3),
+      icon: const Icon(Icons.error_outline, color: Colors.white),
+    );
   }
 
   void togglePasswordVisibility() => obscurePassword.toggle();

@@ -20,31 +20,13 @@ class LoginScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const SizedBox(height: 60),
+                const SizedBox(height: 40),
 
                 Container(
-                  width: 52,
-                  height: 52,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(14),
-                    gradient: const LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [AppColors.accent, AppColors.accent2],
-                    ),
-                    boxShadow: const [
-                      BoxShadow(
-                        color: Color(0x666C63FF),
-                        blurRadius: 20,
-                        offset: Offset(0, 8),
-                      ),
-                    ],
-                  ),
-                  child: const Icon(
-                    Icons.bolt_rounded,
-                    color: Colors.white,
-                    size: 28,
-                  ),
+                  width: 80,
+                  height: 60,
+                  decoration: BoxDecoration(),
+                  child: Image.asset('assets/logo.jpeg', width: 32, height: 32),
                 ),
 
                 const SizedBox(height: 40),
@@ -136,43 +118,6 @@ class LoginScreen extends StatelessWidget {
                     ),
                   ),
                 ),
-
-                // Error message
-                Obx(() {
-                  final msg = controller.errorMessage.value;
-                  if (msg.isEmpty) return const SizedBox.shrink();
-                  return Container(
-                    margin: const EdgeInsets.only(top: 16),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 14,
-                      vertical: 12,
-                    ),
-                    decoration: BoxDecoration(
-                      color: AppColors.error.withAlpha(26),
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(color: AppColors.error.withAlpha(64)),
-                    ),
-                    child: Row(
-                      children: [
-                        Icon(
-                          Icons.error_outline_rounded,
-                          color: AppColors.error.withAlpha(204),
-                          size: 16,
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            msg,
-                            style: const TextStyle(
-                              color: AppColors.error,
-                              fontSize: 13,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  );
-                }),
 
                 const SizedBox(height: 36),
 

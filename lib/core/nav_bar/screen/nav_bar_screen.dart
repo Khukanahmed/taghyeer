@@ -13,7 +13,7 @@ class NavigationbarScreen extends StatelessWidget {
   final List<Widget> pages = [
     ProductListScreen(),
     PostScreen(),
-    ProfileScreen(),
+    SettingScreen(),
   ];
 
   @override

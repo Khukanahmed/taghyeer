@@ -1,28 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+
 import 'package:taghyeer/core/theme/app_theme.dart';
 import 'package:taghyeer/core/theme/theme_controller.dart';
 import 'package:taghyeer/feature/auth/controller/login_controller.dart';
+
 import 'package:taghyeer/feature/route/routes.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
-  // Pre-load prefs before first frame → no theme/route flicker
-  final prefs = await SharedPreferences.getInstance();
-  final isDark = prefs.getBool(StorageKeys.isDarkMode) ?? true;
-  final hasUser = prefs.getString(StorageKeys.user) != null;
-
-  runApp(MyApp(initialDark: isDark, isLoggedIn: hasUser));
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  final bool initialDark;
-  final bool isLoggedIn;
-
-  const MyApp({super.key, required this.initialDark, required this.isLoggedIn});
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {

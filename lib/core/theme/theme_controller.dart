@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+
+import 'package:taghyeer/core/service/shared_preferences_helper.dart';
 
 class ThemeController extends GetxController {
-  final isDarkMode = true.obs;
+  final isDarkMode = false.obs; // default: light
 
   @override
   void onInit() {
@@ -12,26 +13,17 @@ class ThemeController extends GetxController {
   }
 
   Future<void> _loadTheme() async {
-    final prefs = await SharedPreferences.getInstance();
-    isDarkMode.value = prefs.getBool(StorageKeys.isDarkMode) ?? true;
+    isDarkMode.value = await SharedPreferencesHelper.getIsDarkMode();
     _applyTheme();
   }
 
   Future<void> toggleTheme() async {
     isDarkMode.value = !isDarkMode.value;
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool(StorageKeys.isDarkMode, isDarkMode.value);
+    await SharedPreferencesHelper.saveTheme(isDark: isDarkMode.value);
     _applyTheme();
   }
 
   void _applyTheme() {
     Get.changeThemeMode(isDarkMode.value ? ThemeMode.dark : ThemeMode.light);
   }
-}
-
-class StorageKeys {
-  StorageKeys._();
-
-  static const String user = 'user_data';
-  static const String isDarkMode = 'is_dark_mode';
 }

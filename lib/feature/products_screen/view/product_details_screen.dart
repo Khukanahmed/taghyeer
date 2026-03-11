@@ -23,7 +23,6 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     return Scaffold(
       body: CustomScrollView(
         slivers: [
-          // ── Image header ────────────────────────────────────────────────
           SliverAppBar(
             expandedHeight: 340,
             pinned: true,

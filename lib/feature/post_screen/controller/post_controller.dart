@@ -4,30 +4,30 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
-import 'package:taghyeer/feature/products_screen/model/product_model.dart';
+import 'package:taghyeer/feature/post_screen/model/post_model.dart';
 
-enum ProductErrorType { none, noInternet, timeout, apiFailure, empty }
+enum PostErrorType { none, noInternet, timeout, apiFailure, empty }
 
-class ProductController extends GetxController {
-  static const String _baseUrl = 'https://dummyjson.com/products';
+class PostController extends GetxController {
+  static const String _baseUrl = 'https://dummyjson.com/posts';
   static const int _pageSize = 10;
 
   final scrollController = ScrollController();
 
-  final products = <ProductModel>[].obs;
+  final posts = <PostModel>[].obs;
   final isLoading = true.obs;
   final isPaginating = false.obs;
   final errorMessage = ''.obs;
-  final errorType = ProductErrorType.none.obs;
+  final errorType = PostErrorType.none.obs;
 
   int _skip = 0;
   int _total = 0;
-  bool get _hasMore => products.length < _total;
+  bool get _hasMore => posts.length < _total;
 
   @override
   void onInit() {
     super.onInit();
-    _fetchProducts();
+    _fetchPosts();
     scrollController.addListener(_onScroll);
   }
 
@@ -43,17 +43,17 @@ class ProductController extends GetxController {
         !isPaginating.value &&
         !isLoading.value &&
         _hasMore) {
-      _fetchProducts(isPagination: true);
+      _fetchPosts(isPagination: true);
     }
   }
 
-  Future<void> _fetchProducts({bool isPagination = false}) async {
+  Future<void> _fetchPosts({bool isPagination = false}) async {
     if (isPagination) {
       isPaginating.value = true;
     } else {
       isLoading.value = true;
       errorMessage.value = '';
-      errorType.value = ProductErrorType.none;
+      errorType.value = PostErrorType.none;
     }
 
     try {
@@ -61,37 +61,32 @@ class ProductController extends GetxController {
       final response = await http.get(uri).timeout(const Duration(seconds: 10));
 
       if (response.statusCode != 200) {
-        // ── API failure ────────────────────────────────────────────────
-        errorType.value = ProductErrorType.apiFailure;
+        errorType.value = PostErrorType.apiFailure;
         errorMessage.value =
             'Server error (${response.statusCode}). Please try again.';
         return;
       }
 
       final json = jsonDecode(response.body) as Map<String, dynamic>;
-      final fetched = (json['products'] as List)
-          .map((e) => ProductModel.fromJson(e as Map<String, dynamic>))
+      final fetched = (json['posts'] as List)
+          .map((e) => PostModel.fromJson(e as Map<String, dynamic>))
           .toList();
 
       _total = json['total'] as int;
       _skip += fetched.length;
-      products.addAll(fetched);
+      posts.addAll(fetched);
 
-      // ── Empty response ─────────────────────────────────────────────
-      if (products.isEmpty) {
-        errorType.value = ProductErrorType.empty;
-        errorMessage.value = '';
+      if (posts.isEmpty) {
+        errorType.value = PostErrorType.empty;
       }
     } on SocketException {
-      // ── No internet ────────────────────────────────────────────────
-      errorType.value = ProductErrorType.noInternet;
+      errorType.value = PostErrorType.noInternet;
       errorMessage.value = 'No internet connection. Check your network.';
     } on TimeoutException {
-      // ── Slow / timed-out ───────────────────────────────────────────
-      errorType.value = ProductErrorType.timeout;
+      errorType.value = PostErrorType.timeout;
       errorMessage.value = 'Request timed out. Please try again.';
     } catch (_) {
-      errorType.value = ProductErrorType.apiFailure;
+      errorType.value = PostErrorType.apiFailure;
       errorMessage.value = 'Something went wrong. Please try again.';
     } finally {
       isLoading.value = false;
@@ -103,7 +98,7 @@ class ProductController extends GetxController {
   Future<void> refresh() async {
     _skip = 0;
     _total = 0;
-    products.clear();
-    await _fetchProducts();
+    posts.clear();
+    await _fetchPosts();
   }
 }
