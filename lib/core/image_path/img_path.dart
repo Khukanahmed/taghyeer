@@ -1,3 +1,3 @@
 class ImagePath {
-  static const String splashImg = "assets/image/logo.png";
+  static const String logo = "assets/logo.jpeg";
 }

@@ -10,7 +10,11 @@ class NavigationbarScreen extends StatelessWidget {
 
   final NavigationbarController controller = Get.put(NavigationbarController());
 
-  final List<Widget> pages = [ProductScreen(), PostScreen(), SettingScreen()];
+  final List<Widget> pages = [
+    ProductListScreen(),
+    PostScreen(),
+    ProfileScreen(),
+  ];
 
   @override
   Widget build(BuildContext context) {

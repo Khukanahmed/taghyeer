@@ -23,7 +23,7 @@ class SplashScreen extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             SizedBox(),
-            Image.asset(ImagePath.splashImg, width: screenWidth * 0.6),
+            Image.asset(ImagePath.logo, width: screenWidth * 0.6),
             Padding(
               padding: const EdgeInsets.only(bottom: 30.0),
               child: SpinKitCircle(color: AppColors.primaryColor, size: 70),
